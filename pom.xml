@@ -24,15 +24,6 @@
 				<liquibase.config>db/liquibase.properties</liquibase.config>
 			</properties>
 		</profile>
-		<profile>
-			<id>test</id>
-			<properties>
-				<liquibase.config>db/liquibase_test.properties</liquibase.config>
-			</properties>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-		</profile>
 	</profiles>
 
 	<properties>
