@@ -11,7 +11,9 @@ public interface PersonService {
 
     Optional<Person> findById(Integer integer);
 
-    Person save(Person person);
+    Optional<Person> save(Person person);
 
-    void delete(Person person);
+    boolean delete(Integer id);
+
+    boolean update(Person person);
 }

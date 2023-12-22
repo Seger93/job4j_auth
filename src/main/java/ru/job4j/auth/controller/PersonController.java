@@ -32,31 +32,25 @@ public class PersonController {
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
         var savedPerson = this.persons.save(person);
-        if (savedPerson == null) {
+        if (savedPerson.isEmpty()) {
             return new ResponseEntity<Person>(HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<Person>(savedPerson, HttpStatus.CREATED);
+        return new ResponseEntity<Person>(savedPerson.get(), HttpStatus.CREATED);
     }
 
     @PutMapping("/")
-    public ResponseEntity<String> update(@RequestBody Person person) {
-        try {
-            this.persons.save(person);
+    public ResponseEntity<Void> update(@RequestBody Person person) {
+            if (persons.update(person)) {
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ошибка сохранения" + e.getMessage());
         }
+            return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable int id) {
-        try {
-            Person person = new Person();
-            person.setId(id);
-            this.persons.delete(person);
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        if (persons.delete(id)) {
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ошибка удаления" + e.getMessage());
         }
+        return ResponseEntity.notFound().build();
     }
 }

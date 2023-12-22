@@ -25,12 +25,30 @@ public class SimplePersonService implements PersonService {
     }
 
     @Override
-    public Person save(Person person) {
-        return personRepository.save(person);
+    public Optional<Person> save(Person person) {
+        if ( personRepository.findByLogin(person.getLogin()).isPresent()) {
+            return Optional.empty();
+        }
+        return Optional.of(personRepository.save(person));
     }
 
     @Override
-    public void delete(Person person) {
-        personRepository.delete(person);
+    public boolean delete(Integer id) {
+        var findPerson = personRepository.findById(id);
+        if (findPerson.isPresent()) {
+            personRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean update(Person person) {
+        var findPerson = personRepository.findById(person.getId());
+        if (findPerson.isPresent()) {
+            personRepository.save(person);
+            return true;
+        }
+        return false;
     }
 }
