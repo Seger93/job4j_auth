@@ -26,7 +26,7 @@ public class SimplePersonService implements PersonService {
 
     @Override
     public Optional<Person> save(Person person) {
-        if ( personRepository.findByLogin(person.getLogin()).isPresent()) {
+        if (personRepository.findByLogin(person.getLogin()).isPresent()) {
             return Optional.empty();
         }
         return Optional.of(personRepository.save(person));
