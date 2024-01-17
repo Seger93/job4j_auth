@@ -1,8 +1,8 @@
 package ru.job4j.auth.model;
 
-import jakarta.persistence.*;
 import lombok.*;
 
+import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
