@@ -18,7 +18,7 @@ public class PersonController {
 
     private final BCryptPasswordEncoder encoder;
 
-    @GetMapping("all")
+    @GetMapping("/all")
     public List<Person> findAll() {
         return this.persons.findAll();
     }
@@ -32,8 +32,9 @@ public class PersonController {
         return ResponseEntity.ok(person.get());
     }
 
-    @PostMapping("/")
+    @PostMapping("/create")
     public ResponseEntity<Person> create(@RequestBody Person person) {
+        person.setPassword(encoder.encode(person.getPassword()));
         var savedPerson = this.persons.save(person);
         if (savedPerson.isEmpty()) {
             return new ResponseEntity<Person>(HttpStatus.CONFLICT);
@@ -55,11 +56,5 @@ public class PersonController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
-    }
-
-    @PostMapping("sign-up")
-    public void signUp(@RequestBody Person person) {
-        person.setPassword(encoder.encode(person.getPassword()));
-        persons.save(person);
     }
 }
