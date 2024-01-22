@@ -16,6 +16,8 @@ import ru.job4j.auth.service.SimplePersonService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,6 +85,36 @@ public class PersonController {
             return ResponseEntity.ok().build();
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не удален по такому ID");
+    }
+
+    @PatchMapping("/patch")
+    public Person example2(@RequestBody Person person) throws InvocationTargetException, IllegalAccessException {
+        var current = persons.findById(person.getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var methods = current.getClass().getDeclaredMethods();
+        var namePerMethod = new HashMap<String, Method>();
+        for (var method: methods) {
+            var name = method.getName();
+            if (name.startsWith("get") || name.startsWith("set")) {
+                namePerMethod.put(name, method);
+            }
+        }
+        for (var name : namePerMethod.keySet()) {
+            if (name.startsWith("get")) {
+                var getMethod = namePerMethod.get(name);
+                var setMethod = namePerMethod.get(name.replace("get", "set"));
+                if (setMethod == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Невозможно вызвать метод Set из объекта : " + current + ", Проверить сеттеры и геттеры.");
+                }
+                var newValue = getMethod.invoke(person);
+                if (newValue != null) {
+                    setMethod.invoke(current, newValue);
+                }
+            }
+        }
+        persons.save(current);
+        return current;
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
