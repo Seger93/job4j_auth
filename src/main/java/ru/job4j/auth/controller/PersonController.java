@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -28,17 +29,22 @@ public class PersonController {
     private final BCryptPasswordEncoder encoder;
 
     @GetMapping("/all")
-    public List<Person> findAll() {
-        return this.persons.findAll();
+    public ResponseEntity<List<Person>> findAll() {
+        List<Person> allPersons = this.persons.findAll();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(allPersons);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Person> findById(@PathVariable int id) {
         var person = this.persons.findById(id);
         if (person.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найдет такой Id");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден такой Id");
         }
-        return ResponseEntity.ok(person.get());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(person.get());
     }
 
     @PostMapping("/create")
