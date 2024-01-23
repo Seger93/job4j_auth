@@ -10,16 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.job4j.auth.dto.PersonDTO;
 import ru.job4j.auth.model.Person;
 import ru.job4j.auth.service.SimplePersonService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/person")
@@ -87,34 +87,21 @@ public class PersonController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не удален по такому ID");
     }
 
-    @PatchMapping("/patch")
-    public Person example2(@RequestBody Person person) throws InvocationTargetException, IllegalAccessException {
-        var current = persons.findById(person.getId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        var methods = current.getClass().getDeclaredMethods();
-        var namePerMethod = new HashMap<String, Method>();
-        for (var method: methods) {
-            var name = method.getName();
-            if (name.startsWith("get") || name.startsWith("set")) {
-                namePerMethod.put(name, method);
-            }
+    @PatchMapping("/{id}")
+    public Person example2(@RequestBody PersonDTO personDto, @PathVariable Integer id) {
+        Optional<Person> person = persons.findById(id);
+        if (person.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден такой Id");
         }
-        for (var name : namePerMethod.keySet()) {
-            if (name.startsWith("get")) {
-                var getMethod = namePerMethod.get(name);
-                var setMethod = namePerMethod.get(name.replace("get", "set"));
-                if (setMethod == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Невозможно вызвать метод Set из объекта : " + current + ", Проверить сеттеры и геттеры.");
-                }
-                var newValue = getMethod.invoke(person);
-                if (newValue != null) {
-                    setMethod.invoke(current, newValue);
-                }
-            }
+        person.get().setPassword(encoder.encode(personDto.getPassword()));
+        if (person.get().getPassword() == null || person.get().getLogin() == null) {
+            throw new NullPointerException("Поле пароль или логин - пустое");
         }
-        persons.save(current);
-        return current;
+        if (person.get().getPassword().length() < 2) {
+            throw new IllegalArgumentException("Слишком короткий пароль");
+        }
+        persons.update(person.get());
+        return person.get();
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
