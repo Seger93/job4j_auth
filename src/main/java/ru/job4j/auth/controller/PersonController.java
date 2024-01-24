@@ -89,19 +89,13 @@ public class PersonController {
 
     @PatchMapping("/{id}")
     public Person example2(@RequestBody PersonDTO personDto, @PathVariable Integer id) {
-        Optional<Person> person = persons.findById(id);
-        if (person.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден такой Id");
+        if (personDto.getPassword() == null) {
+            throw new NullPointerException("Поле пароль - пустое");
         }
-        person.get().setPassword(encoder.encode(personDto.getPassword()));
-        if (person.get().getPassword() == null || person.get().getLogin() == null) {
-            throw new NullPointerException("Поле пароль или логин - пустое");
-        }
-        if (person.get().getPassword().length() < 2) {
+        if (personDto.getPassword().length() < 2) {
             throw new IllegalArgumentException("Слишком короткий пароль");
         }
-        persons.update(person.get());
-        return person.get();
+        return persons.updateDto(personDto, id);
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
