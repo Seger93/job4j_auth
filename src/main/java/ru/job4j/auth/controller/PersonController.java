@@ -16,10 +16,10 @@ import ru.job4j.auth.service.SimplePersonService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/person")
@@ -50,7 +50,7 @@ public class PersonController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
+    public ResponseEntity<Person> create(@RequestBody @Valid Person person) {
         if (person.getPassword() == null || person.getLogin() == null) {
             throw new NullPointerException("Поле пароль или логин - пустое");
         }
@@ -66,7 +66,7 @@ public class PersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> update(@RequestBody Person person) {
+    public ResponseEntity<Void> update(@RequestBody @Valid Person person) {
         if (person.getPassword() == null || person.getLogin() == null) {
             throw new NullPointerException("Поле пароль или логин - пустое");
         }
@@ -88,7 +88,7 @@ public class PersonController {
     }
 
     @PatchMapping("/{id}")
-    public Person example2(@RequestBody PersonDTO personDto, @PathVariable Integer id) {
+    public Person example2(@RequestBody @Valid PersonDTO personDto, @PathVariable Integer id) {
         if (personDto.getPassword() == null) {
             throw new NullPointerException("Поле пароль - пустое");
         }
